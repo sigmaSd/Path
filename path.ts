@@ -178,6 +178,17 @@ export class Path {
   isSymlink(): boolean {
     return Deno.statSync(this.path).isSymlink;
   }
+  withFileName(name: string): Path {
+    return this.parent() ? this.parent()!.join(name) : name.asPath();
+  }
+  withExtension(ext: string): Path {
+    if (this.fileStem()) {
+      const base = this.fileStem()!.toString();
+      return ext ? new Path(base + "." + ext) : base.asPath();
+    } else {
+      return "".asPath();
+    }
+  }
 }
 
 export class Ancestors implements Iterator<Path> {
@@ -215,3 +226,5 @@ function customJoin(...paths: string[]): string {
   if (!joined) return ".";
   return joined;
 }
+
+export const MAIN_SEPARATOR = path.SEP;
