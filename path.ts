@@ -192,7 +192,7 @@ export class Path {
 }
 
 export class Ancestors implements Iterator<Path> {
-  startPath: Path | undefined;
+  private startPath: Path | undefined;
   constructor(startPath: Path) {
     this.startPath = startPath;
   }
@@ -213,6 +213,8 @@ export class Ancestors implements Iterator<Path> {
   }
 }
 
+export const MAIN_SEPARATOR = path.SEP;
+
 function customJoin(...paths: string[]): string {
   if (paths.length === 0) return ".";
   let joined: string | undefined;
@@ -226,5 +228,3 @@ function customJoin(...paths: string[]): string {
   if (!joined) return ".";
   return joined;
 }
-
-export const MAIN_SEPARATOR = path.SEP;
