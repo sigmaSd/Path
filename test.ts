@@ -1,8 +1,22 @@
-import { Path } from "./path.ts";
+import { MAIN_SEPARATOR, Path } from "./path.ts";
 import {
   assert,
   assertEquals,
 } from "https://deno.land/std@0.126.0/testing/asserts.ts";
+
+Deno.test("intro", () => {
+  // Note: this example does work on Windows
+  const path = new Path("./foo/bar.txt");
+
+  const parent = path.parent();
+  assertEquals!(parent, new Path("./foo"));
+
+  const file_stem = path.fileStem();
+  assertEquals!(file_stem, "bar");
+
+  const extension = path.extension();
+  assertEquals!(extension, "txt");
+});
 
 Deno.test("constructor", () => {
   const string = "foo.txt";
@@ -109,4 +123,42 @@ Deno.test("fileStem", () => {
 Deno.test("extension", () => {
   assertEquals("rs", new Path("foo.rs").extension());
   assertEquals("gz", new Path("foo.tar.gz").extension());
+});
+Deno.test("join", () => {
+  assertEquals(new Path("/etc").join("passwd"), new Path("/etc/passwd"));
+});
+Deno.test("withFileName", () => {
+  {
+    const path = new Path("/tmp/foo.txt");
+    assertEquals!(path.withFileName("bar.txt"), new Path("/tmp/bar.txt"));
+  }
+
+  const path = new Path("/tmp");
+  assertEquals!(path.withFileName("var"), new Path("//var")); // NOTE: Rust strips consecutive slashes
+});
+Deno.test("withExtension", () => {
+  {
+    const path = new Path("foo.rs");
+    assertEquals!(path.withExtension("txt"), new Path("foo.txt"));
+  }
+
+  const path = new Path("foo.tar.gz");
+  assertEquals!(path.withExtension(""), new Path("foo.tar"));
+  assertEquals!(path.withExtension("xz"), new Path("foo.tar.xz"));
+  assertEquals!(
+    path.withExtension("").withExtension("txt"),
+    new Path("foo.txt"),
+  );
+});
+Deno.test("iter", () => {
+  //NOTE iter should be an iterator of Path
+  const it = new Path("/tmp/foo.txt").iter();
+  assertEquals!(it[0], MAIN_SEPARATOR);
+  assertEquals!(it[1], "tmp");
+  assertEquals!(it[2], "foo.txt");
+  assertEquals!(it[3], undefined);
+});
+Deno.test("canonicalize", () => {
+  const path = new Path("/foo/test/../test/bar.rs");
+  assertEquals!(path.canonicalize(), "/foo/test/bar.rs".asPath());
 });
