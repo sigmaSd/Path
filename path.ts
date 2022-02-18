@@ -1,5 +1,14 @@
 import * as path from "https://deno.land/std@0.126.0/path/mod.ts";
 
+declare global {
+  interface String {
+    asPath(): Path;
+  }
+}
+String.prototype.asPath = function (): Path {
+  return new Path(this.toString());
+};
+
 export class Path {
   private path: string;
   constructor(path: string) {
@@ -24,7 +33,6 @@ export class Path {
     }
     return new Path(parsedPath.dir);
   }
-
   ancestors(): Ancestors {
     return new Ancestors(this);
   }
@@ -36,7 +44,6 @@ export class Path {
     }
     return path.basename(path.resolve(this.path));
   }
-
   isDir(): boolean {
     try {
       return Deno.statSync(this.path).isDirectory;
@@ -195,7 +202,7 @@ export class Ancestors implements Iterator<Path> {
   }
 }
 
-export function customJoin(...paths: string[]): string {
+function customJoin(...paths: string[]): string {
   if (paths.length === 0) return ".";
   let joined: string | undefined;
   for (let i = 0, len = paths.length; i < len; ++i) {
