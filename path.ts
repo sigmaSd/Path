@@ -205,12 +205,6 @@ export class Ancestors implements Iterator<Path> {
       return { done: true, value: undefined };
     }
   }
-  *[Symbol.iterator]() {
-    const next = this.next();
-    if (!next.done) {
-      yield next.value;
-    }
-  }
 }
 
 export const MAIN_SEPARATOR = path.SEP;
