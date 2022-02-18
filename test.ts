@@ -151,12 +151,11 @@ Deno.test("withExtension", () => {
   );
 });
 Deno.test("iter", () => {
-  //NOTE iter should be an iterator of Path
   const it = new Path("/tmp/foo.txt").iter();
-  assertEquals!(it[0], MAIN_SEPARATOR);
-  assertEquals!(it[1], "tmp");
-  assertEquals!(it[2], "foo.txt");
-  assertEquals!(it[3], undefined);
+  assertEquals!(it.next().value, MAIN_SEPARATOR);
+  assertEquals!(it.next().value, "tmp");
+  assertEquals!(it.next().value, "foo.txt");
+  assertEquals!(it.next().value, undefined);
 });
 Deno.test("canonicalize", () => {
   const path = new Path("/foo/test/../test/bar.rs");

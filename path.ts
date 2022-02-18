@@ -65,7 +65,7 @@ export class Path {
       return new Path(customJoin(this.path, otherPath.path));
     }
   }
-  iter(): string[] {
+  iter(): Iterator<string> {
     const ancestors = this.ancestors();
     const iterArray = [];
     const valName = (val: Path) => {
@@ -79,18 +79,15 @@ export class Path {
         return n;
       }
     };
-    while (true) {
-      const next = ancestors.next();
-      if (!next.done) {
-        const maybePath = valName(next.value);
-        if (maybePath) {
-          iterArray.push(maybePath);
-        }
-      } else {
-        break;
+    let next = ancestors.next();
+    while (!next.done) {
+      const maybePath = valName(next.value);
+      if (maybePath) {
+        iterArray.push(maybePath);
       }
+      next = ancestors.next();
     }
-    return iterArray.reverse();
+    return iterArray.reverse()[Symbol.iterator]();
   }
   stripPrefix(argPath: Path | string): Path | undefined {
     if (!this.startsWith(argPath)) {
@@ -99,8 +96,8 @@ export class Path {
     const otherPath = (typeof argPath === "string")
       ? new Path(argPath)
       : argPath;
-    const me = [...this.iter()];
-    const other = [...otherPath.iter()];
+    const me = collect(this.iter());
+    const other = collect(otherPath.iter());
     if (me.every((v, i) => v === other[i])) {
       return new Path("");
     }
@@ -120,8 +117,8 @@ export class Path {
     const otherPath = (typeof argPath === "string")
       ? new Path(argPath)
       : argPath;
-    const me = [...this.iter()];
-    const other = [...otherPath.iter()];
+    const me = collect(this.iter());
+    const other = collect(otherPath.iter());
     for (const i of [...Array(other.length).keys()]) {
       if (!new Path(me[i]).equals(new Path(other[i]))) {
         return false;
@@ -133,8 +130,8 @@ export class Path {
     const otherPath = (typeof argPath === "string")
       ? new Path(argPath)
       : argPath;
-    const me = [...this.iter()].reverse();
-    const other = [...otherPath.iter()].reverse();
+    const me = collect(this.iter()).reverse();
+    const other = collect(otherPath.iter()).reverse();
     for (const i of [...Array(other.length).keys()]) {
       if (!new Path(me[i]).equals(new Path(other[i]))) {
         return false;
@@ -221,4 +218,14 @@ function customJoin(...paths: string[]): string {
   }
   if (!joined) return ".";
   return joined;
+}
+
+function collect<T>(iter: Iterator<T>): T[] {
+  const r = [];
+  let i = iter.next();
+  while (!i.done) {
+    r.push(i.value);
+    i = iter.next();
+  }
+  return r;
 }
