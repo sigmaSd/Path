@@ -220,8 +220,9 @@ function collect<T>(iter: Iterator<T>): T[] {
   }
   return r;
 }
+
 function filterMap<A, B>(
-  array: (A | undefined)[],
+  array: A[],
   fun: (arg: (A | undefined)) => (B | undefined),
 ): B[] {
   const r = [];
