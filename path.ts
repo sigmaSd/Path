@@ -66,28 +66,19 @@ export class Path {
     }
   }
   iter(): Iterator<string> {
-    const ancestors = this.ancestors();
-    const iterArray = [];
-    const valName = (val: Path) => {
-      const n = path.basename(val.toString());
-      if (n === "") {
-        if (path.dirname(val.toString()) === ".") {
+    const paths = collect(this.ancestors()).reverse();
+    const partName = (part: Path) => {
+      const baseName = path.basename(part.toString());
+      if (baseName === "") {
+        if (path.dirname(part.toString()) === ".") {
           return undefined;
         }
-        return path.dirname(val.toString());
+        return path.dirname(part.toString());
       } else {
-        return n;
+        return baseName;
       }
     };
-    let next = ancestors.next();
-    while (!next.done) {
-      const maybePath = valName(next.value);
-      if (maybePath) {
-        iterArray.push(maybePath);
-      }
-      next = ancestors.next();
-    }
-    return iterArray.reverse()[Symbol.iterator]();
+    return filterMap(paths.map(partName), (e) => e)[Symbol.iterator]();
   }
   stripPrefix(argPath: Path | string): Path | undefined {
     if (!this.startsWith(argPath)) {
@@ -226,6 +217,18 @@ function collect<T>(iter: Iterator<T>): T[] {
   while (!i.done) {
     r.push(i.value);
     i = iter.next();
+  }
+  return r;
+}
+function filterMap<A, B>(
+  array: (A | undefined)[],
+  fun: (arg: (A | undefined)) => (B | undefined),
+): B[] {
+  const r = [];
+  for (const e of array[Symbol.iterator]()) {
+    if (fun(e) !== undefined) {
+      r.push(fun(e)!);
+    }
   }
   return r;
 }
