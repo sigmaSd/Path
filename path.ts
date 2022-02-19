@@ -223,7 +223,7 @@ function collect<T>(iter: Iterator<T>): T[] {
 
 function filterMap<A, B>(
   array: A[],
-  fun: (arg: (A | undefined)) => (B | undefined),
+  fun: (arg: A) => (B | undefined),
 ): B[] {
   const r = [];
   for (const e of array[Symbol.iterator]()) {
