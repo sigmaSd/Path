@@ -227,8 +227,9 @@ function filterMap<A, B>(
 ): B[] {
   const r = [];
   for (const e of array[Symbol.iterator]()) {
-    if (fun(e) !== undefined) {
-      r.push(fun(e)!);
+    const fe = fun(e);
+    if (fe !== undefined) {
+      r.push(fe);
     }
   }
   return r;
