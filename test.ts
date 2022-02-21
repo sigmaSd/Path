@@ -108,7 +108,7 @@ Deno.test("stripPrefix", () => {
 Deno.test("endsWith", () => {
   const path = new Path("/etc/resolv.conf");
 
-  assert(path.endsWith("resolv.conf"));
+  assert(path.endsWith("resolv.conf".asPath()));
   assert(path.endsWith("etc/resolv.conf"));
   assert(path.endsWith("/etc/resolv.conf"));
 
@@ -119,13 +119,19 @@ Deno.test("endsWith", () => {
 Deno.test("fileStem", () => {
   assertEquals("foo", new Path("foo.rs").fileStem());
   assertEquals("foo.tar", new Path("foo.tar.gz").fileStem());
+  assertEquals(undefined, new Path("foo.rs/..").fileStem());
 });
 Deno.test("extension", () => {
   assertEquals("rs", new Path("foo.rs").extension());
   assertEquals("gz", new Path("foo.tar.gz").extension());
+  assertEquals(undefined, new Path("foo.rs/..").extension());
 });
 Deno.test("join", () => {
   assertEquals(new Path("/etc").join("passwd"), new Path("/etc/passwd"));
+  assertEquals(
+    new Path("").join("passwd".asPath()),
+    new Path("passwd"),
+  );
 });
 Deno.test("withFileName", () => {
   {
@@ -160,4 +166,35 @@ Deno.test("iter", () => {
 Deno.test("canonicalize", () => {
   const path = new Path("/foo/test/../test/bar.rs");
   assertEquals!(path.canonicalize(), "/foo/test/bar.rs".asPath());
+});
+Deno.test("isDir", () => {
+  assert(Deno.makeTempDirSync().asPath().isDir());
+  assert(!Deno.makeTempFileSync().asPath().isDir());
+  assert(!"".asPath().isDir());
+});
+Deno.test("isFile", () => {
+  assert(Deno.makeTempFileSync().asPath().isFile());
+  assert(!Deno.makeTempDirSync().asPath().isFile());
+  assert(!"".asPath().isFile());
+});
+Deno.test("metaData", () => {
+  assert(Deno.makeTempFileSync().asPath().metaData()?.isFile);
+  assertEquals("".asPath().metaData(), undefined);
+});
+Deno.test("exists", () => {
+  assert(Deno.makeTempFileSync().asPath().exists());
+  assert(!"".asPath().exists());
+});
+Deno.test("readDir", () => {
+  assertEquals([...Deno.makeTempDirSync().asPath().readDir()], []);
+});
+Deno.test("symLink", () => {
+  const f = Deno.makeTempFileSync();
+  Deno.symlinkSync(f, f + ".link");
+  assert(new Path(f + ".link").isSymlink());
+});
+Deno.test("readLink", () => {
+  const f = Deno.makeTempFileSync();
+  Deno.symlinkSync(f, f + ".link");
+  assertEquals(new Path(f + ".link").readLink(), f.asPath());
 });

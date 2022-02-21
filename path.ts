@@ -161,10 +161,11 @@ export class Path {
   exists(): boolean {
     if (this.metaData()) {
       return true;
-    } else return false;
+    }
+    return false;
   }
   isSymlink(): boolean {
-    return Deno.statSync(this.path).isSymlink;
+    return Deno.lstatSync(this.path).isSymlink;
   }
   withFileName(name: string): Path {
     return this.parent() ? this.parent()!.join(name) : name.asPath();
