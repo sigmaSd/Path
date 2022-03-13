@@ -7,7 +7,7 @@ https://doc.rust-lang.org/std/path/struct.Path.html
 # Usage
 
 ```ts
-import { Path } from "https://raw.githubusercontent.com/sigmaSd/Path/master/path.ts";
+import { Path } from "https://deno.land/x/rustpath";
 const path = new Path("/hello");
 console.log(path.join("world"));
 ```
