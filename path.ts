@@ -10,15 +10,15 @@ String.prototype.asPath = function (): Path {
 };
 
 export class Path {
-  #path: string;
+  private path: string;
   constructor(path: string) {
-    this.#path = path;
+    this.path = path;
   }
   toString(): string {
-    return this.#path;
+    return this.path;
   }
   isAbsoulte(): boolean {
-    return path.isAbsolute(this.#path);
+    return path.isAbsolute(this.path);
   }
   isRelative(): boolean {
     return !this.isAbsoulte();
@@ -27,7 +27,7 @@ export class Path {
     return this.parent() !== undefined;
   }
   parent(): Path | undefined {
-    const parsedPath = path.parse(this.#path);
+    const parsedPath = path.parse(this.path);
     if (parsedPath.base === "") {
       return undefined;
     }
@@ -37,32 +37,32 @@ export class Path {
     return new Ancestors(this);
   }
   fileName(): string | undefined {
-    const base = path.parse(this.#path).base;
+    const base = path.parse(this.path).base;
     if (base === "" || base === "..") {
       // Rust does this
       return undefined;
     }
-    return path.basename(path.resolve(this.#path));
+    return path.basename(path.resolve(this.path));
   }
   isDir(): boolean {
     try {
-      return Deno.statSync(this.#path).isDirectory;
+      return Deno.statSync(this.path).isDirectory;
     } catch {
       return false;
     }
   }
   isFile(): boolean {
     try {
-      return Deno.statSync(this.#path).isFile;
+      return Deno.statSync(this.path).isFile;
     } catch {
       return false;
     }
   }
   join(otherPath: Path | string): Path {
     if (typeof otherPath === "string") {
-      return new Path(customJoin(this.#path, otherPath));
+      return new Path(customJoin(this.path, otherPath));
     } else {
-      return new Path(customJoin(this.#path, otherPath.#path));
+      return new Path(customJoin(this.path, otherPath.path));
     }
   }
   iter(): Iterator<string> {
@@ -99,8 +99,8 @@ export class Path {
     );
   }
   equals(otherPath: Path): boolean {
-    const me = path.parse(this.#path);
-    const other = path.parse(otherPath.#path);
+    const me = path.parse(this.path);
+    const other = path.parse(otherPath.path);
     return me.root === other.root && me.dir === other.dir &&
       me.base === other.base && me.ext === other.ext && me.name === other.name;
   }
@@ -142,30 +142,30 @@ export class Path {
       return split.slice(split?.length - 1)[0];
     }
   }
-  metaData(): Deno.FileInfo | undefined {
-    try {
-      return Deno.statSync(this.#path);
-    } catch {
-      undefined;
-    }
+  metaData(): Deno.FileInfo {
+    return Deno.statSync(this.path);
   }
   canonicalize(): Path {
-    return new Path(path.resolve(this.#path));
+    const resolved = path.resolve(this.path).asPath();
+    resolved.metaData();
+    return resolved;
   }
   readLink(): Path {
-    return new Path(Deno.readLinkSync(this.#path));
+    return new Path(Deno.readLinkSync(this.path));
   }
   readDir(): Iterable<Deno.DirEntry> {
-    return Deno.readDirSync(this.#path);
+    return Deno.readDirSync(this.path);
   }
   exists(): boolean {
-    if (this.metaData()) {
+    try {
+      this.metaData();
       return true;
+    } catch {
+      return false;
     }
-    return false;
   }
   isSymlink(): boolean {
-    return Deno.lstatSync(this.#path).isSymlink;
+    return Deno.lstatSync(this.path).isSymlink;
   }
   withFileName(name: string): Path {
     return this.parent() ? this.parent()!.join(name) : name.asPath();
