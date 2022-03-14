@@ -146,9 +146,8 @@ export class Path {
     return Deno.statSync(this.path);
   }
   canonicalize(): Path {
-    const resolved = path.resolve(this.path).asPath();
-    resolved.metaData();
-    return resolved;
+    this.metaData();
+    return path.resolve(this.path).asPath();
   }
   readLink(): Path {
     return new Path(Deno.readLinkSync(this.path));
